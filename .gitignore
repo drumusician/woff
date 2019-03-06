@@ -21,6 +21,7 @@ erl_crash.dump
 
 # If NPM crashes, it generates a log, let's ignore it too.
 npm-debug.log
+yarn-error.log
 
 # The directory NPM downloads your dependencies sources to.
 /node_modules/
@@ -37,3 +38,4 @@ npm-debug.log
 # variables.
 /config/*.secret.exs
 .elixir_ls
+/elm-stuff/

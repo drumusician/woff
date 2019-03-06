@@ -1,0 +1,10 @@
+/* This file is for your main application css. */
+
+@import "bulma";
+@import "./phoenix.css";
+
+.timer {
+	align-items: center;
+	display: flex;
+	justify-content: space-evenly;
+}

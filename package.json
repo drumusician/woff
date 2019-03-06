@@ -7,13 +7,22 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "@babel/preset-react": "^7.0.0",
+    "bulma": "^0.7.4",
+    "elm": "^0.19.0-bugfix6",
+    "node-sass": "^4.11.0",
     "phoenix": "file:deps/phoenix",
-    "phoenix_html": "file:deps/phoenix_html"
+    "phoenix_html": "file:deps/phoenix_html",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
+    "sass-loader": "^7.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.0.0",
+    "elm-webpack-loader": "^5.0.0",
     "copy-webpack-plugin": "^4.5.0",
     "css-loader": "^0.28.10",
     "mini-css-extract-plugin": "^0.4.0",

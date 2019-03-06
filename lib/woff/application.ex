@@ -9,9 +9,9 @@ defmodule Woff.Application do
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
-      WoffWeb.Endpoint
+      WoffWeb.Endpoint,
       # Starts a worker by calling: Woff.Worker.start_link(arg)
-      # {Woff.Worker, arg},
+      {Woff.Timer, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
