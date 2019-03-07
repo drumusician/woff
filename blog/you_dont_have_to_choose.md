@@ -165,8 +165,8 @@ We'll name our react component Timer and add it in `assets/js/components`. The d
 
 ```js
 ...
-import React from 'react'
-import ReactDOM from 'react-dom
+import React from 'react';
+import ReactDOM from 'react-dom';
 ...
 
 // render React Component into a specified DIV
