@@ -195,57 +195,38 @@ Now, this post is not specifically about React or implementation details of a Ti
 ```jsx
 import React from 'react';
 
-const initialState = {
-  timediff: 0,
-  intervalHandle: 0,
-  days: 0,
-  hours: 0,
-  minutes: 0,
-  seconds: 0
-}
-
-const padTime = (value) => {
+const padTime = value => {
   if (value < 10) {
     return `0${value}`;
   } else {
     return value;
   }
-}
+};
 
 export default class Timer extends React.Component {
-  constructor(props) {
-    super(props)
-
-    // Set the initial state of the component in a constructor.
-    this.state = initialState
-  }
+  state = {
+    timediff: 0,
+    intervalHandle: null,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  };
 
   componentDidMount = () => {
     const timediff = this.timeToWoff();
-    const {days, hours, minutes, seconds} = this.getTime(timediff);
+    const { days, hours, minutes, seconds } = this.getTime(timediff);
     const intervalHandle = setInterval(this.tick, 1000);
 
     this.setState({
-      timediff: timediff,
-      intervalHandle: intervalHandle,
-      days: days,
-      hours: hours,
-      minutes: minutes,
-      seconds: seconds
+      timediff,
+      intervalHandle,
+      days,
+      hours,
+      minutes,
+      seconds
     });
-
-  }
-
-  render() {
-    return (
-      <span>
-        {(this.state.days > 0) ? `${this.state.days} days ` : ''}
-        {padTime(this.state.hours)}:
-        {padTime(this.state.minutes)}:
-        {padTime(this.state.seconds)}
-      </span>
-    )
-  }
+  };
 
   tick = () => {
     const { days, hours, minutes, seconds } = this.getTime(this.state.timediff - 1);
@@ -255,36 +236,49 @@ export default class Timer extends React.Component {
     }
 
     this.setState({
-      timediff: this.state.timediff -1,
-      days: days,
-      hours: hours,
-      minutes: minutes,
-      seconds: seconds
+      timediff: this.state.timediff - 1,
+      days,
+      hours,
+      minutes,
+      seconds
     });
-  }
+  };
 
-  getTime = (timediff) =>  {
-    const days = Math.floor(timediff / 86400)
+  getTime = timediff => {
+    const days = Math.floor(timediff / 86400);
     const hours = Math.floor((timediff - days * 86400) / 3600);
-    timediff -= hours * 3600;
-    const minutes = Math.floor(timediff / 60) % 60;
-    timediff -= minutes * 60;
-    const seconds = timediff % 60;
+    let remaining = timediff - hours * 3600;
+    const minutes = Math.floor(remaining / 60) % 60;
+    remaining -= minutes * 60;
+    const seconds = remaining % 60;
 
     return {
-      days, hours, minutes, seconds
-    }
-  }
+      days,
+      hours,
+      minutes,
+      seconds
+    };
+  };
 
   timeToWoff = () => {
     const date = new Date();
-    date.setDate(date.getDate() + (5 + 7 - date.getDay()) % 7);
+    date.setDate(date.getDate() + ((5 + 7 - date.getDay()) % 7));
     date.setHours(12);
     date.setMinutes(0);
     date.setSeconds(0);
     return Math.abs(date - Date.now()) / 1000;
+  };
+
+  render() {
+    return (
+      <span>
+        {this.state.days > 0 ? `${this.state.days} days ` : ''}
+        {padTime(this.state.hours)}:{padTime(this.state.minutes)}:{padTime(this.state.seconds)}
+      </span>
+    );
   }
 }
+
 ```
 
 ### Elm
@@ -503,6 +497,8 @@ And finally we'll add the implementation details in a GenServer
 defmodule Woff.Timer do
   use GenServer
 
+  @timeout 1_000
+
   def start_link([]) do
     GenServer.start_link(__MODULE__, %{})
   end
@@ -511,20 +507,18 @@ defmodule Woff.Timer do
 
   def init(_) do
     # this is where we get the number of seconds to the next WOFF
-    schedule_timer(1_000)
-    {:ok, seconds_to_next_woff()}
+    {:ok, seconds_to_next_woff(), @timeout}
   end
 
-  def handle_info(:update, 0) do
+  def handle_info(:timeout, 0) do
     broadcast(0, "WOFFTIME!")
     {:noreply, 0}
   end
 
-  def handle_info(:update, time) do
+  def handle_info(:timeout, time) do
     new_time = time - 1
     broadcast(new_time, format_duration(new_time))
-    schedule_timer(1_000)
-    {:noreply, new_time}
+    {:noreply, new_time, @timeout}
   end
 
 	defp format_duration(unix_time) do
@@ -546,10 +540,6 @@ defmodule Woff.Timer do
     digit
     |> to_string
     |> String.pad_leading(2, "0")
-  end
-
-  defp schedule_timer(interval) do
-    Process.send_after(self(), :update, interval)
   end
 
   defp broadcast(time, response) do
@@ -592,7 +582,6 @@ defmodule Woff.Timer do
     DateTime.add(datetime, (days_till_friday * 3600 * 24), :second)
   end
 end
-
 ```
 
 Now of course the implementations of the Timer are a fair bit of work, but the goal of this post was to see how straightforward it would be to add different Javascript Libraries on one page as components. I was very surprised that this is not difficult at all and this gives us some great ways to add interactive client-side components where needed and handle the main serving of pages that don't need this to the server. I like this approach as it gives me the advantages of both and I can now decide what works best feature by feature.

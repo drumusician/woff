@@ -1,6 +1,8 @@
 defmodule Woff.Timer do
   use GenServer
 
+  @timeout 1_000
+
   def start_link([]) do
     GenServer.start_link(__MODULE__, %{})
   end
@@ -9,20 +11,18 @@ defmodule Woff.Timer do
 
   def init(_) do
     # this is where we get the number of seconds to the next WOFF
-    schedule_timer(1_000)
-    {:ok, seconds_to_next_woff()}
+    {:ok, seconds_to_next_woff(), @timeout}
   end
 
-  def handle_info(:update, 0) do
+  def handle_info(:timeout, 0) do
     broadcast(0, "WOFFTIME!")
     {:noreply, 0}
   end
 
-  def handle_info(:update, time) do
+  def handle_info(:timeout, time) do
     new_time = time - 1
     broadcast(new_time, format_duration(new_time))
-    schedule_timer(1_000)
-    {:noreply, new_time}
+    {:noreply, new_time, @timeout}
   end
 
 	defp format_duration(unix_time) do
@@ -44,10 +44,6 @@ defmodule Woff.Timer do
     digit
     |> to_string
     |> String.pad_leading(2, "0")
-  end
-
-  defp schedule_timer(interval) do
-    Process.send_after(self(), :update, interval)
   end
 
   defp broadcast(time, response) do
