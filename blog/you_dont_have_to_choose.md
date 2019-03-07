@@ -3,9 +3,11 @@
 
 At the Kabisa Amsterdam Team (a.k.a. KAT) office we have a nice tradition every Friday, World of Food Friday's, or in short, WOFF. It brings our team together and let's all of us sync in as we are often busy on many different projects during the week. We go out for lunch at a place called World of Food, which is basically a marketplace with all kinds of small food stands with the best food from all over the world. The nice thing is that you can pick and choose what you like and then all sit together and enjoy a nice meal, while discussing all our experiences from the past week. 
 
-Now I started to think about this and found this scenario to be very similar to the choices we have to make during the startup of a new project. First of all the choice of technology in the vast World of Frontend Frameworks(WOFF :0), all developers do have their own preferred meal. But not only just the choice in what framework to use for the frontend but also the choice between going with a Single Page Application(SPA) or a Server Side Rendered Application(SSRA). These days I think people tend to grab an SPA framework far too quickly, and I believe that is mainly because they are afraid that it'll become hard to integrate an SSRA with an SPA after the start of the project. These days many technologies provide a backend that servers pages really quickly that the choice of an SPA does not merely become a matter of page load speeds, but rather a choice of needing the in-page interaction. In this post I like to explore the way we can use an SSRA and add Frontend Components as we go along, without necessarily limiting ourselves to a specific framework.
+Now I started to think about this and found this scenario to be very similar to the choices we have to make during the startup of a new project. First of all the choice of technology in the vast World of Frontend Frameworks(WOFF :) ) , as all developers do have their own preferred meal. But not only just the choice in what framework to use for the frontend but also the choice between going with a Single Page Application(SPA) or a Server Side Rendered Application(SSRA). These days I think people tend to grab an SPA framework far too quickly, and I believe that is mainly because they are afraid that it'll become hard to integrate an SSRA with an SPA after the start of the project. 
 
-We'll start by setting up a basic SSRA using the awesome Phoenix Framework. Using the Phoenix generator this is very straightforward. For this we'll need to have Elixir and Phoenix installed. For instruction please refer to their guides [here](https://elixir-lang.org/install.html) and [here](https://hexdocs.pm/phoenix/installation.html). Once that is ready we can generate our projec like this:
+These days many technologies provide a backend that serves pages really quickly that the choice of an SPA does not merely become a matter of page load speeds, but rather a choice of needing the in-page interaction. In this post I like to explore the way we can use an SSRA and add Frontend Components as we go along, without necessarily limiting ourselves to a specific framework.
+
+We'll start by setting up a basic SSRA using the awesome Phoenix Framework. Using the Phoenix generator this is very straightforward. For this we'll need to have Elixir and Phoenix installed. For instruction please refer to their guides [here](https://elixir-lang.org/install.html) and [here](https://hexdocs.pm/phoenix/installation.html). Once that is ready we can generate our project like this:
 
 ```shell
 mix phx.new woff --no-ecto
@@ -13,7 +15,7 @@ mix phx.new woff --no-ecto
 
 I've left out ecto, because we really don't need a database for this.
 
-While this gives us a good starting point, I have come accross a setup someone implemented that has all the config(so also for webpack) in the root of the project. So you don't have to switch to the assets folder constantly, which makes this setup kind of nice. For convenience I have created a little generator that will convert a new phoenix project into this setup. So you can install and run that using my baco project.
+While this gives us a good starting point, I have come accross a setup someone implemented that has all the config(so also for webpack) in the root of the project. So you don't have to switch to the assets folder constantly, which makes this setup kind of nice. For convenience I have created a little generator that will convert a new phoenix project into this setup. So you can install and run that using my `baco` project.
 
 ```shell
 mix archive.install hex baco
@@ -36,7 +38,7 @@ watchers: [
 ]
 ```
 
-For the purpose of this post we'll create a page in our Phoenix project to host our frontend components. And because we always like to now how long we have to wait until the next WOFF, we'll implement a countdown timer that counts down to the next World of Food Friday (that means the next Friday, noon). We'll see if we can actually add multiple timers using different frontend frameworks in one page, just for the fun of it :)
+For the purpose of this post we'll create a page in our Phoenix project to host our frontend components. At our office we always like to now how long we have to wait until the next WOFF, so we'll implement a countdown timer that counts down to the next World of Food Friday (that means the next Friday, noon). We'll see if we can actually add multiple timers using different frontend frameworks in one page, just for the fun of it :)
 
 ### Template
 
@@ -126,7 +128,7 @@ You'll see I have already added 3 slots for 3 different timers. One using React,
 
 ### React
 
-So how do we add our React Component into this div...? There is a nice little hex package that makes rendering reat component in elixir templates a breeze, [react_phoenix](https://hex.pm/packages/react_phoenix). But for this post I wanted to see if I can make it work without using any extra dependencies. So just using React and ReactDOM we should be able to render a component in a div very easily. We do need to install react and react-dom and some babel stuff, and also configure webpack to handle jsx files.
+So how do we add our React Component into this div...? There is a nice little hex package that makes rendering react components in elixir templates a breeze, [react_phoenix](https://hex.pm/packages/react_phoenix). But for this post I wanted to see if I can make it work without using any extra dependencies. So just using React and ReactDOM we should be able to render a component in a div very easily. We do need to install react and react-dom and some babel stuff, and also configure webpack to handle jsx files.
 
 ```bash
 yarn add react react-dom @babel/preset-react @babel/plugin-proposal-class-properties
@@ -295,7 +297,7 @@ So let's first install elm:
 yarn add elm elm-webpack-loader
 ```
 
-And here is an elm.json config file to use. You can also generate this with elm init, but I've added it here for convenience. All the credit for the Elm Timer implementation goes to my colleague Tonći Galić, as I haven't played with Elm that much yet...
+And here is an elm.json config file to use. You can also generate this with elm init, but I've added it here for convenience. All the credit for the Elm Timer implementation goes to my colleague [Tonći Galić a.k.a. Tuxified](https://github.com/Tuxified), as I haven't played with Elm that much yet...
 
 ```js
 // elm.json
@@ -444,7 +446,7 @@ formatRemaining remainingSeconds =
 
 ```
 
-For the last timer I wanted to actually use LiveView, but after reading Chris' blog post on how to do that I discovered that the implementation is actually not publicly available yet. So I decided to roll my own GenServer implementation that mimics the functionality of LiveView a bit using Phoenix Channels.
+For the last timer I wanted to actually use LiveView, but after reading [Chris' blog post](https://dockyard.com/blog/2018/12/12/phoenix-liveview-interactive-real-time-apps-no-need-to-write-javascript) on how to do that I discovered that the implementation is actually not publicly available yet. So I decided to roll my own GenServer implementation that mimics the functionality of LiveView a bit using Phoenix Channels.
 
 First we'll need to import the socket in app.js
 
@@ -593,7 +595,7 @@ end
 
 ```
 
-Now of course the implementations of the Timer are a fair bit of work, but the goal of this post was to see how straightforward it would be to add different Javascript Libraries on a page as components. I was very surprised that this is not difficult at all and this gives us some great ways to just add interactive client-side components where needed and handle the main serving of pages that don't need this to the server. I like this approach as it gives me the advantages of both and I can now decide what works best feature by feature.
+Now of course the implementations of the Timer are a fair bit of work, but the goal of this post was to see how straightforward it would be to add different Javascript Libraries on one page as components. I was very surprised that this is not difficult at all and this gives us some great ways to add interactive client-side components where needed and handle the main serving of pages that don't need this to the server. I like this approach as it gives me the advantages of both and I can now decide what works best feature by feature.
 Now that I have figured this out it is time to build something real. So let's see what I come up with in a feature post... 
 
 Until next `time`
