@@ -38,7 +38,7 @@ watchers: [
 ]
 ```
 
-For the purpose of this post we'll create a page in our Phoenix project to host our frontend components. At our office we always like to now how long we have to wait until the next WOFF, so we'll implement a countdown timer that counts down to the next World of Food Friday (that means the next Friday, noon). We'll see if we can actually add multiple timers using different frontend frameworks in one page, just for the fun of it :)
+For the purpose of this post we'll create a page in our Phoenix project to host our frontend components. At our office we always like to know how long we have to wait until the next WOFF, so we'll implement a countdown timer that counts down to the next World of Food Friday (that means the next Friday, noon). We'll see if we can actually add multiple timers using different frontend frameworks in one page, just for the fun of it :)
 
 ### Template
 
@@ -190,96 +190,7 @@ export default class Timer extends React.Component {
 ```
 And it works!
 
-Now, this post is not specifically about React or implementation details of a Timer, so I won't go into detail into that for this post. Here is the React Timer:
-
-```jsx
-import React from 'react';
-
-const padTime = value => {
-  if (value < 10) {
-    return `0${value}`;
-  } else {
-    return value;
-  }
-};
-
-export default class Timer extends React.Component {
-  state = {
-    timediff: 0,
-    intervalHandle: null,
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
-  };
-
-  componentDidMount = () => {
-    const timediff = this.timeToWoff();
-    const { days, hours, minutes, seconds } = this.getTime(timediff);
-    const intervalHandle = setInterval(this.tick, 1000);
-
-    this.setState({
-      timediff,
-      intervalHandle,
-      days,
-      hours,
-      minutes,
-      seconds
-    });
-  };
-
-  tick = () => {
-    const { days, hours, minutes, seconds } = this.getTime(this.state.timediff - 1);
-
-    if (hours === 0 && minutes === 0 && seconds === 0) {
-      clearInterval(this.state.intervalHandle);
-    }
-
-    this.setState({
-      timediff: this.state.timediff - 1,
-      days,
-      hours,
-      minutes,
-      seconds
-    });
-  };
-
-  getTime = timediff => {
-    const days = Math.floor(timediff / 86400);
-    const hours = Math.floor((timediff - days * 86400) / 3600);
-    let remaining = timediff - hours * 3600;
-    const minutes = Math.floor(remaining / 60) % 60;
-    remaining -= minutes * 60;
-    const seconds = remaining % 60;
-
-    return {
-      days,
-      hours,
-      minutes,
-      seconds
-    };
-  };
-
-  timeToWoff = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + ((5 + 7 - date.getDay()) % 7));
-    date.setHours(12);
-    date.setMinutes(0);
-    date.setSeconds(0);
-    return Math.abs(date - Date.now()) / 1000;
-  };
-
-  render() {
-    return (
-      <span>
-        {this.state.days > 0 ? `${this.state.days} days ` : ''}
-        {padTime(this.state.hours)}:{padTime(this.state.minutes)}:{padTime(this.state.seconds)}
-      </span>
-    );
-  }
-}
-
-```
+Now, this post is not specifically about React or implementation details of a Timer, so I won't go into detail into that for this post. You can view the implementation of the react timer here: [/assets/js/components/Timer.jsx](../assets/js/components/Timer.jsx)
 
 ### Elm
 
@@ -337,108 +248,7 @@ Elm.Timer.init({ node: elmDiv })
 ...
 ```
 
-And this is the full implementation for the Elm Timer.
-
-```elm
-module Timer exposing (Msg(..), main, update, view)
-
-import Browser
-import Html exposing (Html, button, div, h1, text)
-import Html.Events exposing (onClick)
-import Task
-import Time
-import Time.Extra as T
-import Debug exposing (toString)
-
-main =
-    Browser.element { init = initialModel
-                    , update = update
-                    , view = view
-                    , subscriptions = subscriptions
-                    }
-
-
---type alias Time =
---    Float
-
-
-type alias Model =
-    { expirationTime : Time.Posix
-    , remainingSeconds : Int
-    , status : Status
-    , zone : Time.Zone
-    }
-
-
-initialModel : () -> (Model, Cmd Msg)
-initialModel _ =
-    ( Model (Time.millisToPosix 0) 0 Running Time.utc
-    , Task.perform AdjustTimeZone Time.here
-    )
-
-
-getNextWoff =
-    Task.perform AdjustNextWoff Time.now
-
-
-type Status
-    = Running
-    | Expired
-
-
-type Msg
-    = Init
-    | AdjustTimeZone Time.Zone
-    | AdjustNextWoff Time.Posix
-    | Tick Time.Posix
-
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-    case msg of
-        Init ->
-            initialModel ()
-
-        AdjustTimeZone newTimeZone ->
-            ( {model | zone = newTimeZone}
-            , Task.perform AdjustNextWoff Time.now
-            )
-
-        AdjustNextWoff now ->
-            let
-                nextWoffDay = T.posixToParts model.zone <| T.ceiling T.Friday model.zone now
-                {year, month, day} = nextWoffDay
-                nextWoff = T.ceiling T.Second model.zone (T.partsToPosix model.zone (T.Parts year month day 12 0 0 0))
-            in
-                ({model | expirationTime = nextWoff}, Cmd.none)
-
-        Tick newTime->
-            ( {model | remainingSeconds = (T.diff T.Second Time.utc newTime model.expirationTime)}
-            , Cmd.none
-            )
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ h1 [ onClick Init ] [ text <| formatRemaining model.remainingSeconds ]
-        ]
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-  Time.every 1000 Tick
-
-
-formatRemaining : Int -> String
-formatRemaining remainingSeconds =
-    let
-        days = remainingSeconds // 86400
-        hours = (remainingSeconds - days * 86400) // 3600
-        minutes = (remainingSeconds - (days * 86400) - (hours * 3600)) // 60
-        seconds = remainingSeconds - (days * 86400) - (hours * 3600) - (minutes * 60)
-        daysString = if days > 0 then (toString days) ++ " days " else ""
-    in
-            daysString ++ (toString hours) ++ ":" ++ (toString minutes) ++ ":" ++ (toString seconds)
-
-```
+You can find the full implementation for the Elm Timer here: [/assets/elm/src/Timer.elm](../assets/elm/src/Timer.elm)
 
 For the last timer I wanted to actually use LiveView, but after reading [Chris' blog post](https://dockyard.com/blog/2018/12/12/phoenix-liveview-interactive-real-time-apps-no-need-to-write-javascript) on how to do that I discovered that the implementation is actually not publicly available yet. So I decided to roll my own GenServer implementation that mimics the functionality of LiveView a bit using Phoenix Channels.
 
@@ -491,100 +301,10 @@ defmodule WoffWeb.TimerChannel do
 end
 ```
 
-And finally we'll add the implementation details in a GenServer
-
-```elixir
-defmodule Woff.Timer do
-  use GenServer
-
-  @timeout 1_000
-
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, %{})
-  end
-
-  ## Server ##
-
-  def init(_) do
-    # this is where we get the number of seconds to the next WOFF
-    {:ok, seconds_to_next_woff(), @timeout}
-  end
-
-  def handle_info(:timeout, 0) do
-    broadcast(0, "WOFFTIME!")
-    {:noreply, 0}
-  end
-
-  def handle_info(:timeout, time) do
-    new_time = time - 1
-    broadcast(new_time, format_duration(new_time))
-    {:noreply, new_time, @timeout}
-  end
-
-	defp format_duration(unix_time) do
-    days = div(unix_time, 86400)
-		{hours, remaining} = { div(unix_time - days * 86400, 3600), rem(unix_time, 3600) }
-		{minutes, seconds} = { div(remaining, 60), rem(remaining, 60) }
-    stringify_date({days, hours, minutes, seconds})
-  end
-
-  defp stringify_date({days, hours, minutes, seconds}) when days == 0 do
-    "#{pad_digit(hours)}:#{pad_digit(minutes)}:#{pad_digit(seconds)}"
-  end
-
-  defp stringify_date({days, hours, minutes, seconds}) do
-    "#{days} days #{pad_digit(hours)}:#{pad_digit(minutes)}:#{pad_digit(seconds)}"
-  end
-
-  defp pad_digit(digit) do
-    digit
-    |> to_string
-    |> String.pad_leading(2, "0")
-  end
-
-  defp broadcast(time, response) do
-    payload = %{
-      time: time,
-      response: response
-    }
-    WoffWeb.Endpoint.broadcast!("timer:update", "new_time", payload)
-  end
-
-  defp seconds_to_next_woff do
-    {:ok, datetime} = DateTime.now("Europe/Amsterdam")
-
-    next_woff_time(datetime) - DateTime.to_unix(datetime)
-  end
-
-  defp next_woff_time(datetime) do
-    date = datetime |> DateTime.to_date
-
-    day_of_the_week =
-      date
-      |> Date.day_of_week
-
-    days_till_friday = rem((12 - day_of_the_week), 7)
-    next_woff_date = next_woff_date(datetime, days_till_friday)
-
-		DateTime.to_unix(%DateTime{ next_woff_date | hour: 12, minute: 0, second: 0 })
-  end
-
-  defp next_woff_date(%DateTime{hour: hour} = datetime, days_till_friday)
-    when hour < 12 and days_till_friday == 0 do
-    datetime
-  end
-
-  defp next_woff_date(datetime, days_till_friday) when days_till_friday == 0 do
-    DateTime.add(datetime, (7 * 3600 * 24), :second)
-  end
-
-  defp next_woff_date(datetime, days_till_friday) do
-    DateTime.add(datetime, (days_till_friday * 3600 * 24), :second)
-  end
-end
-```
+And finally we'll add the implementation details in a GenServer, which you can find here: [/lib/woff/timer.ex](../lib/woff/timer.ex)
 
 Now of course the implementations of the Timer are a fair bit of work, but the goal of this post was to see how straightforward it would be to add different Javascript Libraries on one page as components. I was very surprised that this is not difficult at all and this gives us some great ways to add interactive client-side components where needed and handle the main serving of pages that don't need this to the server. I like this approach as it gives me the advantages of both and I can now decide what works best feature by feature.
+
 Now that I have figured this out it is time to build something real. So let's see what I come up with in a feature post... 
 
 Until next `time`
