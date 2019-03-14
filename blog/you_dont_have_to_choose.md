@@ -190,7 +190,7 @@ export default class Timer extends React.Component {
 ```
 And it works!
 
-Now, this post is not specifically about React or implementation details of a Timer, so I won't go into detail into that for this post. You can view the implementation of the react timer here: [/assets/js/components/Timer.jsx](../assets/js/components/Timer.jsx)
+Now, this post is not specifically about React or implementation details of a Timer, so I won't go into detail into that for this post. You can view the implementation of the react timer here: [/assets/js/components/Timer.jsx](https://github.com/drumusician/woff/blob/master/assets/js/components/Timer.jsx)
 
 ### Elm
 
@@ -248,7 +248,7 @@ Elm.Timer.init({ node: elmDiv })
 ...
 ```
 
-You can find the full implementation for the Elm Timer here: [/assets/elm/src/Timer.elm](../assets/elm/src/Timer.elm)
+You can find the full implementation for the Elm Timer here: [/assets/elm/src/Timer.elm](https://github.com/drumusician/woff/blob/master/assets/elm/src/Timer.elm)
 
 For the last timer I wanted to actually use LiveView, but after reading [Chris' blog post](https://dockyard.com/blog/2018/12/12/phoenix-liveview-interactive-real-time-apps-no-need-to-write-javascript) on how to do that I discovered that the implementation is actually not publicly available yet. So I decided to roll my own GenServer implementation that mimics the functionality of LiveView a bit using Phoenix Channels.
 
@@ -301,7 +301,7 @@ defmodule WoffWeb.TimerChannel do
 end
 ```
 
-And finally we'll add the implementation details in a GenServer, which you can find here: [/lib/woff/timer.ex](../lib/woff/timer.ex)
+And finally we'll add the implementation details in a GenServer, which you can find here: [/lib/woff/timer.ex](https://github.com/drumusician/woff/blob/master/lib/woff/timer.ex)
 
 Now of course the implementations of the Timer are a fair bit of work, but the goal of this post was to see how straightforward it would be to add different Javascript Libraries on one page as components. I was very surprised that this is not difficult at all and this gives us some great ways to add interactive client-side components where needed and handle the main serving of pages that don't need this to the server. I like this approach as it gives me the advantages of both and I can now decide what works best feature by feature.
 
